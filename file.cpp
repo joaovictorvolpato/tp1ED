@@ -4,6 +4,7 @@
 #include "queue.h"
 #include "stack.h"
 
+//strutura para tratar as imagens binarias
 struct Image {
     int height;
     int width;
@@ -11,14 +12,9 @@ struct Image {
     std::string name;
 };
 
-struct Pixel{
-    int x;
-    int y;
-};
-
+//estrutura da dados nescessarias para tratar o problema
 structures::LinkedStack<std::string> stack{};
 structures::LinkedQueue<std::string> queue{};
-structures::LinkedQueue<struct Pixel*> pixels_to_label{};
 structures::LinkedQueue<struct Image*> images{};
 
 bool xml_verification (char *arquivo) {
@@ -140,101 +136,35 @@ void colect_atributes() {
     }
 }
 
-/*void flood_fill(struct Image *image, int x, int y) {
+void recursive_fill(struct Image *image, int x, int y) {
     if (image->data[x][y] == 1) {
         image->data[x][y] = 0;
     	if (x > 0) {
-            flood_fill(image, x - 1, y);
+            recursive_fill(image, x - 1, y);
         }
     	if (y > 0) {
-            flood_fill(image, x, y - 1);
+            recursive_fill(image, x, y - 1);
         }
     	if (x < image -> height - 1) {
-            flood_fill(image, x + 1, y);
+            recursive_fill(image, x + 1, y);
         }
     	if (y < image -> width - 1) {
-            flood_fill(image, x, y + 1);
+            recursive_fill(image, x, y + 1);
         }
     }
 }
 
-int coleta_nodes(struct Image *image) {
-	int con = 0;
+int get_conected_components(struct Image *image) {
+	int conected_components = 1;
 	for (int i = 0; i < image -> height; i++) {
 		for (int j = 0; j < image -> width; j++) {
 			if ( image -> data[i][j] == 1) {
-				con += 1;
-				flood_fill(image , i, j);
+				conected_components += 1;
+				recursive_fill(image , i, j);
 			}
 		}
 	}
-	return con;
-}*/
-
-int labeling(struct Image *image){
-    struct Image *Rmatrix;
-    struct Pixel *pixel;
-    struct Pixel *pixelup;
-    struct Pixel *pixelleft;
-    struct Pixel *pixelright;
-    struct Pixel *pixeldown;
-    //creating R matrix
-    for (int i = 0; i < image -> height; i++) {
-		for (int j = 0; j < image -> width; j++) {
-			    Rmatrix -> data[i][j] == 0;
-		}
-	}
-    int label = 1;
-    //iterating E matrix
-    for (int i = 0; i < image -> height; i++) {
-		for (int j = 0; j < image -> width; j++) {
-			if (image -> data[i][j] == 1 && Rmatrix -> data[i][j] == 0){
-                pixel->x = i;
-                pixel->y = j;
-                pixels_to_label.enqueue(pixel);
-                Rmatrix -> data[i][j] == label;
-            }
-            while(!pixels_to_label.empty()){
-                pixel = pixels_to_label.dequeue();
-
-                //seta os pixels vizinhos
-                pixelup->x = pixel->x;
-                pixelup->y = pixel->y+1;
-                pixeldown->x = pixel->x;
-                pixeldown->y = pixel->y-1;
-                pixelright->x = pixel->x+1;
-                pixelright->y = pixel->y+1;
-                pixelleft->x = pixel->x-1;
-                pixelleft->y = pixel->y;
-
-                //teste se esta dentro da imagem e insere na fila
-                if(0 < pixel->x+1 <= image-> height)
-                    pixels_to_label.enqueue(pixelright);
-                if(0 < pixel->x-1 <= image-> height)
-                    pixels_to_label.enqueue(pixelleft);
-                if(0 < pixel->y+1 <= image-> width)
-                    pixels_to_label.enqueue(pixelup);
-                if(0 < pixel->y-1 <= image-> width)
-                    pixels_to_label.enqueue(pixeldown);
-
-                //testa se o pixel na matrix original =1 e se ja foi rotulado na matrix auxiliar e atribui o rotulo
-                if(image -> data[pixel->x][pixel->y+1] == 1 && Rmatrix -> data[pixel->x][pixel->y+1] == 0){
-                    Rmatrix -> data[pixel->x][pixel->y+1] == label;
-                }
-                if(image -> data[pixel->x][pixel->y-1] == 1 && Rmatrix -> data[pixel->x][pixel->y-1] == 0){
-                    Rmatrix -> data[pixel->x][pixel->y-1] == label;
-                }
-                if(image -> data[pixel->x+1][pixel->y] == 1 && Rmatrix -> data[pixel->x+1][pixel->y] == 0){
-                    Rmatrix -> data[pixel->x+1][pixel->y] == label;
-                }
-                if(image -> data[pixel->x-1][pixel->y] == 1 && Rmatrix -> data[pixel->x-1][pixel->y] == 0){
-                    Rmatrix -> data[pixel->x-1][pixel->y] == label;
-                }
-            }
-        label++;          
-		}
-	}
-    return label;
+	return conected_components-1;
 }
 
 void resultado() {
@@ -244,7 +174,7 @@ void resultado() {
     while (!images.empty()) {
         binary_image = images.dequeue();
         std::cout << binary_image -> name << ' ';
-        std::cout << labeling(binary_image) << std::endl;
+        std::cout << get_conected_components(binary_image) << std::endl;
     }
 }
 
